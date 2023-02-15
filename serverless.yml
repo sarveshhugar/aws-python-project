@@ -1,0 +1,125 @@
+service: serverless-dynamodb
+frameworkVersion: ">=2.24.0"
+
+
+provider:
+  name: aws
+  runtime: python3.8
+  environment:
+    DYNAMODB_TABLE: ${self:custom.tableName}
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+             - dynamodb:*
+             - cognito-idp:*
+             - s3:GetObject
+             - ses:* 
+            
+          Resource: "*"
+
+custom:
+  tableName: employee-data
+  
+
+plugins:
+  - serverless-offline
+
+functions:
+  create:
+    handler: src/create.create
+    events:
+      - http:
+          path: src
+          method: post
+          cors: true
+
+  list:
+    handler: src/list.list
+    events:
+      - http:
+          path: src/{company}
+          method: get
+          cors: true
+
+  get:
+    handler: src/get.get
+    events:
+      - http:
+          path: src/{company}/{email}
+          method: get
+          cors: true
+
+  update:
+    handler: src/update.update
+    events:
+      - http:
+          path: src/update/{id}
+          method: put
+          cors: true
+
+  delete:
+    handler: src/delete.delete
+    events:
+      - http:
+          path: src/{company}/{email}
+          method: delete
+          cors: true
+
+  # createFile:
+  #   handler: s3files/createFile.createFile
+  #   event: 
+  #     - http:
+  #         path: s3files/{filename}
+  #         method: post
+  #         cors: true
+
+resources:
+  Resources:
+    srcDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        AttributeDefinitions:
+          - AttributeName: company
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: company
+            KeyType: HASH
+          - AttributeName: email
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+
+
+# resources:
+#   Resources:
+#     srcDynamoDbTable:
+#       Type: 'AWS::DynamoDB::Table'
+#       DeletionPolicy: Retain
+#       Properties:
+#         AttributeDefinitions:
+#           -
+#             AttributeName: email
+#             AttributeType: S
+          
+#         KeySchema:
+#           -
+#             AttributeName: email
+#             KeyType: HASH
+#         ProvisionedThroughput:
+#           ReadCapacityUnits: 1
+#           WriteCapacityUnits: 1
+#         TableName: "7EDGE-EMPLOYEE"
+        # BillingMode: PAY_PER_REQUEST
+
+    # s3bucket:
+    #   Type: AWS::S3::Bucket
+    #   Properties: 
+    #     BucketName: ${self:custom.bucketName} 
