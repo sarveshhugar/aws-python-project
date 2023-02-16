@@ -25,13 +25,13 @@ data={"name":"abc",
 #         k='SET #{} = {}'.format(col,data[col])
 #         print(k)
 # update_expression= 'SET {}'.format(','.join(f'#{p}=:{p}' for p in data if p!="email" and p!="company"))
-update_expression= 'SET {}'.format(','.join(f'#{p}=:{p}' for p in data if p!="email" and p!="company"))
-expression_attribute_values= {f':{p}': v for p,v in data.items() if p!="email" and p!="company"}
-expression_attribute_names= { f'#{p}': p for p in data if p!="email" and p!="company"}
-import time
-print(update_expression)
-print(expression_attribute_names)
-print(expression_attribute_values)
+# update_expression= 'SET {}'.format(','.join(f'#{p}=:{p}' for p in data if p!="email" and p!="company"))
+# expression_attribute_values= {f':{p}': v for p,v in data.items() if p!="email" and p!="company"}
+# expression_attribute_names= { f'#{p}': p for p in data if p!="email" and p!="company"}
+# import time
+# print(update_expression)
+# print(expression_attribute_names)
+# print(expression_attribute_values)
 
     
-print(str(time.ctime(time.time())))
+# print(str(time.ctime(time.time())))
