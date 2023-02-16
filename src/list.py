@@ -2,20 +2,20 @@ import json
 import os
 
 import boto3
-dynamodb = boto3.client('dynamodb')
+dynamodb = boto3.resource('dynamodb')
 
-
+table=dynamodb.Table(os.environ['DYNAMODB_TABLE'])
 def list(event, context):
     # table = dynamodb.Table('7EDGE-EMPLOYEE')
     # table = dynamodb.Table()
 
 
     # fetch all employees names from the database
-    result = dynamodb.query(
-        TableName=os.environ['DYNAMODB_TABLE'],
+    result = table.query(
+        
         KeyConditionExpression='company= :company',
         ExpressionAttributeValues={
-        ':company': {'S' : event['pathParameters']['company'] }
+        ':company':event['pathParameters']['company'] 
         }
     )
 
