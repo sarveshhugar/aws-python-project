@@ -56,7 +56,7 @@ functions:
     handler: src/update.update
     events:
       - http:
-          path: src/update/{id}
+          path: src/update/{company}
           method: put
           cors: true
 
@@ -87,6 +87,9 @@ resources:
             AttributeType: S
           - AttributeName: email
             AttributeType: S
+          - AttributeName: gsi1
+            AttributeType: S
+
         KeySchema:
           - AttributeName: company
             KeyType: HASH
@@ -95,6 +98,15 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+
+        GlobalSecondaryIndexes:
+          - IndexName: gsi1-index
+            KeySchema:
+              - AttributeName: gsi1
+                KeyType: HASH
+              
+            Projection:
+              ProjectionType: 'ALL'
 
 
 

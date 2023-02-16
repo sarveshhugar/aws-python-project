@@ -3,6 +3,7 @@ import os
 import logging
 import boto3
 import uuid
+import time
 
 dynamodb = boto3.resource('dynamodb')
 
@@ -14,10 +15,11 @@ def create(event, context):
         raise Exception("Couldn't create the item.")
 
     table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
-    # available_emails=table.scan()["items"]
-    # if data["email"]
+    
+    timestamp=str(time.time())
     item1 = {
-        'empid':str(uuid.uuid1())
+        'empid':str(uuid.uuid1()),
+        'createdOn':timestamp
     }
     item2=data["item"]
 
