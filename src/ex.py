@@ -17,7 +17,9 @@ k=''
 data={"name":"abc",
       "age":"23",
       "email":"ahgdha",
-      "company":"hbac"}  
+      "company":"hbac",
+      "yoe":10,
+      "dob":"15th aug"}  
 # for col in data:
 #     if col!="company" and col!="email":
 #         k='#{}'.format(col)
