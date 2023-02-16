@@ -12,8 +12,6 @@ def update(event, context):
         raise Exception("Couldn't create the item.")
     
 
-
-
     # update the employee detail in the database
     table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
     update_expression= 'SET {}'.format(','.join(f'#{p}=:{p}' for p in data if p!="email" and p!="company"))
