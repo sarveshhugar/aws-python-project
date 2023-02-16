@@ -16,18 +16,19 @@ def update(event, context):
 
     # update the employee detail in the database
     table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
-    for col in data:
-        if col!="email" and col!="company":
-            table.update_item(
+    update_expression= 'SET {}'.format(','.join(f'#{p}=:{p}' for p in data if p!="email" and p!="company"))
+    expression_attribute_values= {f':{p}': v for p,v in data.items() if p!="email" and p!="company"}
+    expression_attribute_names= { f'#{p}': p for p in data if p!="email" and p!="company"}
+
+
+    response= table.update_item(
                 Key={
                     'company': event['pathParameters']['company'],
                     'email':data['email']
                     },
-                ExpressionAttributeNames={
-                    '#{}'.format(col): '{}'.format(col)},
-                ExpressionAttributeValues={':{}'.format(col): data[col]
-                                        },
-                UpdateExpression='SET #{} = :{}'.format(col,col),
+                ExpressionAttributeNames = expression_attribute_names,
+                ExpressionAttributeValues = expression_attribute_values,
+                UpdateExpression = update_expression,
                 
                 ReturnValues='UPDATED_NEW'
         
@@ -36,7 +37,7 @@ def update(event, context):
     # create a response
     response = {
         "statusCode": 200,
-        "body": "Update successfull!"
+        "body": json.dumps(response["Attributes"])
     }
 
     return response
