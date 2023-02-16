@@ -6,10 +6,7 @@ dynamodb = boto3.resource('dynamodb')
 
 table=dynamodb.Table(os.environ['DYNAMODB_TABLE'])
 def list(event, context):
-    # table = dynamodb.Table('7EDGE-EMPLOYEE')
-    # table = dynamodb.Table()
-
-
+    
     # fetch all employees names from the database
     result = table.query(
         
