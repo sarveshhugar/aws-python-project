@@ -68,6 +68,14 @@ functions:
           method: delete
           cors: true
 
+  search:
+    handler: src/search.search
+    events:
+      - http:
+          path: src/search/{company}
+          method: get
+          cors: true
+
   # createFile:
   #   handler: s3files/createFile.createFile
   #   event: 
