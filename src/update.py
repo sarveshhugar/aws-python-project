@@ -9,7 +9,7 @@ def update(event, context):
     data = json.loads(event['body'])
     if 'email' not in data:
         logging.error("Validation Failed")
-        raise Exception("Couldn't create the item.")
+        raise Exception("Couldn't update the item.")
     
 
     # update the employee detail in the database

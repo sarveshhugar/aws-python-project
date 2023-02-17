@@ -72,8 +72,8 @@ functions:
     handler: src/search.search
     events:
       - http:
-          path: src/search/{company}
-          method: get
+          path: src/search
+          method: post
           cors: true
 
   # createFile:
