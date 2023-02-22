@@ -2,7 +2,7 @@ import boto3
 import json
 import logging
 import os
-
+# from botocore.exceptions import ClientError
 
 dynamodb=boto3.resource('dynamodb')
 table=dynamodb.Table(os.environ['DYNAMODB_TABLE'])
@@ -39,7 +39,7 @@ def search(event,context):
                 )
 
     else:
-        Filter_expression= '{}'.format(' AND '.join(f'#{p}=:{p}' for p in data if p!="company" and p!="email"))
+        Filter_expression= '{}'.format(' AND '.join(f'#{p}=:{p}' for p in data if p!="company" and p!="email" and p!="sortby"))
         
         if "email" in data:
              Key_Condition_Expression="#company= :company AND #email =:email"
@@ -51,8 +51,8 @@ def search(event,context):
              Expression_attribute_values={":company":data["company"]}
             
         
-        Expression_attribute_values2= { f':{p}': data[p] for p in data if p!="company" }
-        Expression_Attribute_Names={ f'#{p}': p for p in data }
+        Expression_attribute_values2= { f':{p}': data[p] for p in data if p!="company" and p!="sortby"}
+        Expression_Attribute_Names={ f'#{p}': p for p in data if p!="sortby"}
         Expression_attribute_values.update(Expression_attribute_values2)
 
         if len(Filter_expression)!=0 and len(Expression_Attribute_Names)!=0:
@@ -70,11 +70,27 @@ def search(event,context):
             )
     
     
-    if len(response["Items"])!=0:    
-        return {
-            "statusCode":200,
-            "body":json.dumps(response["Items"])
-        }
+    if len(response["Items"])!=0:   
+
+        if "sortby" in data:
+             l,Items=[],response["Items"]
+             try:
+                for item in sorted(Items,key = lambda item : item[data["sortby"]]):
+                    l.append(item)
+             except:
+                   logging.error("Invalid attribute")
+
+             else:
+                return {
+                "statusCode":200,
+                "body":json.dumps(l)
+                }
+        else:
+            return {
+             "statusCode":200,
+             "body":json.dumps(response["Items"])
+            }
+    
     else:
          return {
               "statusCode":200,
