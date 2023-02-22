@@ -13,7 +13,7 @@
 # k.update(d)
 # print(k)
 # l=[  ]
-k=''
+# k=''
 # data={"gsi1":"7EDGE",
 #     # "from":"bangalore",
 #     #   "YOE":"5",
@@ -58,29 +58,32 @@ k=''
 # print(Expression_Attribute_Names)
 # k={"va","great"}
 # print(type(k))
-data={
-        "company":"NPTC",
-        "email":"karan@email.com"
-}
+# data={
+#         "company":"NPTC",
+#         "email":"karan@email.com"
+# }
+for item in sorted(Items,key = lambda item : item["firstname"]):
+    l.append(item)
+    
 
-Filter_expression= '{}'.format(' AND '.join(f'#{p}=:{p}' for p in data if p!="company" and p!="email"))
+# Filter_expression= '{}'.format(' AND '.join(f'#{p}=:{p}' for p in data if p!="company" and p!="email"))
         
 
-if "email" not in data:
-            Expression_attribute_values1={":company": data["company"]}
-            Expression_Attribute_Names={ f'#{p}': p for p in data  },
-            Key_Condition_Expression= "#company = :company"
-else:
-            Expression_attribute_values1={":company": data["company"],":email": data["email"]}
-            Expression_Attribute_Names={ f'#{p}': p for p in data  },
-            Key_Condition_Expression= "#company = :company AND #email= :email"
-Expression_attribute_values2= { f':{p}': data[p] for p in data if p!="company" }
+# if "email" not in data:
+#             Expression_attribute_values1={":company": data["company"]}
+#             Expression_Attribute_Names={ f'#{p}': p for p in data  },
+#             Key_Condition_Expression= "#company = :company"
+# else:
+#             Expression_attribute_values1={":company": data["company"],":email": data["email"]}
+#             Expression_Attribute_Names={ f'#{p}': p for p in data  },
+#             Key_Condition_Expression= "#company = :company AND #email= :email"
+# Expression_attribute_values2= { f':{p}': data[p] for p in data if p!="company" }
 
-print("Key_Condition_Expression","--",Key_Condition_Expression)
-print("Expression_Attribute_Names","--",Expression_Attribute_Names)
-print("Expression_attribute_values1","--",Expression_attribute_values1)
-print("Expression_attribute_values2","--",Expression_attribute_values2)
-print("Filter_expression","--",Filter_expression)
-print()
-Expression_attribute_values1.update(Expression_attribute_values2)
-print("updated",Expression_attribute_values1)
+# print("Key_Condition_Expression","--",Key_Condition_Expression)
+# print("Expression_Attribute_Names","--",Expression_Attribute_Names)
+# print("Expression_attribute_values1","--",Expression_attribute_values1)
+# print("Expression_attribute_values2","--",Expression_attribute_values2)
+# print("Filter_expression","--",Filter_expression)
+# print()
+# Expression_attribute_values1.update(Expression_attribute_values2)
+# print("updated",Expression_attribute_values1)
