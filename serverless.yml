@@ -21,7 +21,7 @@ provider:
           Resource: "*"
 
 custom:
-  tableName: employee-data
+  tableName: emp-database
   
 
 plugins:
@@ -95,7 +95,9 @@ resources:
             AttributeType: S
           - AttributeName: email
             AttributeType: S
-          - AttributeName: gsi1
+          - AttributeName: companytype
+            AttributeType: S
+          - AttributeName: from
             AttributeType: S
 
         KeySchema:
@@ -108,14 +110,23 @@ resources:
           WriteCapacityUnits: 1
 
         GlobalSecondaryIndexes:
-          - IndexName: gsi1-index
+          - IndexName: companytype-index
             KeySchema:
-              - AttributeName: gsi1
+              - AttributeName: companytype
                 KeyType: HASH
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
               
+            Projection:
+              ProjectionType: 'ALL'
+        LocalSecondaryIndexes:
+          - IndexName: from-index
+            KeySchema:
+              - AttributeName: company
+                KeyType: HASH
+              - AttributeName: from
+                KeyType: RANGE
             Projection:
               ProjectionType: 'ALL'
 
