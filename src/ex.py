@@ -62,8 +62,8 @@
 #         "company":"NPTC",
 #         "email":"karan@email.com"
 # }
-for item in sorted(Items,key = lambda item : item["firstname"]):
-    l.append(item)
+# for item in sorted(Items,key = lambda item : item["firstname"]):
+#     l.append(item)
     
 
 # Filter_expression= '{}'.format(' AND '.join(f'#{p}=:{p}' for p in data if p!="company" and p!="email"))
@@ -87,3 +87,10 @@ for item in sorted(Items,key = lambda item : item["firstname"]):
 # print()
 # Expression_attribute_values1.update(Expression_attribute_values2)
 # print("updated",Expression_attribute_values1)
+# import botocore.exceptions
+
+# for key, value in sorted(botocore.exceptions.__dict__.items()):
+#     if isinstance(value, type):
+#         print(key)
+import time
+print(time.ctime())
