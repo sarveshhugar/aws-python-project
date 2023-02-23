@@ -16,7 +16,7 @@ def create(event, context):
 
     table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
     
-    timestamp=str(time.time())
+    timestamp=str(time.ctime())
     item1 = {
         'empid':str(uuid.uuid1()),
         'createdOn':timestamp
