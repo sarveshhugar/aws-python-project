@@ -21,7 +21,7 @@ provider:
           Resource: "*"
 
 custom:
-  tableName: emp-database
+  tableName: emp-data
   
 
 plugins:
@@ -99,6 +99,16 @@ resources:
             AttributeType: S
           - AttributeName: from
             AttributeType: S
+          - AttributeName: firstname
+            AttributeType: S
+          - AttributeName: lastname
+            AttributeType: S
+          - AttributeName: YOE
+            AttributeType: S
+          - AttributeName: yearjoined
+            AttributeType: S
+          
+
 
         KeySchema:
           - AttributeName: company
@@ -129,7 +139,38 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: 'ALL'
-
+          - IndexName: firstname-index
+            KeySchema:
+              - AttributeName: company
+                KeyType: HASH
+              - AttributeName: firstname
+                KeyType: RANGE
+            Projection:
+              ProjectionType: 'ALL'
+          - IndexName: lastname-index
+            KeySchema:
+              - AttributeName: company
+                KeyType: HASH
+              - AttributeName: lastname
+                KeyType: RANGE
+            Projection:
+              ProjectionType: 'ALL'
+          - IndexName: YOE-index
+            KeySchema:
+              - AttributeName: company
+                KeyType: HASH
+              - AttributeName: YOE
+                KeyType: RANGE
+            Projection:
+              ProjectionType: 'ALL'
+          - IndexName: yearjoined-index
+            KeySchema:
+              - AttributeName: company
+                KeyType: HASH
+              - AttributeName: yearjoined
+                KeyType: RANGE
+            Projection:
+              ProjectionType: 'ALL'
 
 
 # resources:
