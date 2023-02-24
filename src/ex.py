@@ -14,12 +14,15 @@
 # print(k)
 # l=[  ]
 # k=''
-# data={"gsi1":"7EDGE",
-#     # "from":"bangalore",
-#     #   "YOE":"5",
-#     #   "yearjoined":"2004",
-#       "IndexName":"gsi1-index"
-#       }
+data={"gsi1":"7EDGE",
+    # "from":"bangalore",
+    #   "YOE":"5",
+    #   "yearjoined":"2004",
+      "IndexName":"gsi1-index",
+      "sortby":"firstname"
+      }
+IndexName="{}-index".format(data["sortby"])
+print(IndexName)
 # t={"bil":data["bil"] if "bil" in data,
 #    "gsi1":"abc"}  
 # print(t)
@@ -92,5 +95,5 @@
 # for key, value in sorted(botocore.exceptions.__dict__.items()):
 #     if isinstance(value, type):
 #         print(key)
-import time
-print(time.ctime())
+# import time
+# print(time.ctime())
