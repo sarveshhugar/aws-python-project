@@ -10,16 +10,18 @@ table=dynamodb.Table(os.environ['DYNAMODB_TABLE'])
 def search(event,context):
     data=json.loads(event["body"])
     
+    ignoreExp={"sortby","orderby","limit","lastkey"}
+
     #searching using GSI
     if "IndexName" in data:
         if "companytype" not in data:
              logging.error("Search failed")
              raise Exception("Couldn't search for item.")
-        Filter_expression= '{}'.format(' AND '.join(f'#{p}=:{p}' for p in data if p!="IndexName" and p!="companytype" and p!="sortby" and p!="orderby"))
-        Expression_Attribute_Names={ f'#{p}': p for p in data if p!="IndexName" and p!="companytype" and p!="sortby" and p!="orderby"}
+        Filter_expression= '{}'.format(' AND '.join(f'#{p}=:{p}' for p in data if p!="IndexName" and p!="companytype" and p not in ignoreExp))
+        Expression_Attribute_Names={ f'#{p}': p for p in data if p!="IndexName" and p!="companytype" and p not in ignoreExp}
 
         Expression_attribute_values1={":companytype": data["companytype"]}
-        Expression_attribute_values2= { f':{p}': data[p] for p in data if p!="IndexName" and p!="companytype" and p!="sortby" and p!="orderby"}
+        Expression_attribute_values2= { f':{p}': data[p] for p in data if p!="IndexName" and p!="companytype" and p not in ignoreExp}
 
         Expression_attribute_values1.update(Expression_attribute_values2)
 
@@ -31,7 +33,6 @@ def search(event,context):
                     ExpressionAttributeValues = Expression_attribute_values1,
                     FilterExpression = Filter_expression,
                     ExpressionAttributeNames = Expression_Attribute_Names
-
                     )
         #if there is only gsi index
         else:
@@ -40,10 +41,10 @@ def search(event,context):
                 KeyConditionExpression="companytype = :companytype",
                 ExpressionAttributeValues = Expression_attribute_values1
                 )
-
-    #searching using Primary Key
+    #-------------------------------------------------------------------------------------------------------------
+    #search,filter and sort using Primary Key
     else:
-        Filter_expression= '{}'.format(' AND '.join(f'#{p}=:{p}' for p in data if p!="company" and p!="email" and p!="sortby" and p!="orderby"))
+        Filter_expression= '{}'.format(' AND '.join(f'#{p}=:{p}' for p in data if p!="company" and p!="email" and p not in ignoreExp))
         
         #using  sortkey
         if "email" in data:
@@ -55,65 +56,141 @@ def search(event,context):
              Expression_attribute_values={":company":data["company"]}
             
         
-        Expression_attribute_values2= { f':{p}': data[p] for p in data if p!="company" and p!="sortby" and p!="orderby" }
-        Expression_Attribute_Names={ f'#{p}': p for p in data if p!="sortby" and p!="orderby"}
+        Expression_attribute_values2= { f':{p}': data[p] for p in data if p!="company" and p not in ignoreExp }
+        Expression_Attribute_Names={ f'#{p}': p for p in data if p not in ignoreExp}
         Expression_attribute_values.update(Expression_attribute_values2)
 
         #if there are non-key attributes also
         if len(Filter_expression)!=0 and len(Expression_Attribute_Names)!=0:
-            response=table.query(
-                KeyConditionExpression = Key_Condition_Expression,
-                ExpressionAttributeValues = Expression_attribute_values,
-                ExpressionAttributeNames = Expression_Attribute_Names,
-                FilterExpression = Filter_expression
-            )
-        #if there are only key attributes
+            if "sortby" in data:
+                #if there is orderby
+                if "orderby" in data:
+                    if "lastkey" in data:
+                        response=table.query(
+                            IndexName="{}-index".format(data["sortby"]),
+                            KeyConditionExpression = Key_Condition_Expression,
+                            ExpressionAttributeValues = Expression_attribute_values,
+                            ExpressionAttributeNames = Expression_Attribute_Names,
+                            FilterExpression = Filter_expression,
+                            ScanIndexForward = False if data["orderby"]=="desc" else True ,
+                            Limit = 10 if not "limit" in data else data["limit"],
+                            ExclusiveStartKey= data["lastkey"]   
+                        )
+                    else:
+                        response=table.query(
+                            IndexName="{}-index".format(data["sortby"]),
+                            KeyConditionExpression = Key_Condition_Expression,
+                            ExpressionAttributeValues = Expression_attribute_values,
+                            ExpressionAttributeNames = Expression_Attribute_Names,
+                            FilterExpression = Filter_expression,
+                            ScanIndexForward = False if data["orderby"]=="desc" else True ,
+                            Limit = 10 if not "limit" in data else data["limit"]    
+                        )
+                else:
+                    if "lastkey" in data:
+                        response=table.query(
+                            IndexName="{}-index".format(data["sortby"]),
+                            KeyConditionExpression = Key_Condition_Expression,
+                            ExpressionAttributeValues = Expression_attribute_values,
+                            ExpressionAttributeNames = Expression_Attribute_Names,
+                            FilterExpression = Filter_expression,
+                            ScanIndexForward = True ,
+                            Limit = 10 if not "limit" in data else data["limit"],
+                            ExclusiveStartKey = data["lastkey"]  
+                        )
+                    else:
+                        response=table.query(
+                        IndexName="{}-index".format(data["sortby"]),
+                        KeyConditionExpression = Key_Condition_Expression,
+                        ExpressionAttributeValues = Expression_attribute_values,
+                        ExpressionAttributeNames = Expression_Attribute_Names,
+                        FilterExpression = Filter_expression,
+                        ScanIndexForward = True ,
+                        Limit = 10 if not "limit" in data else data["limit"]  
+                    )
+            else:
+                #if nothing to sort just filter and give search results
+                if "lastkey" in data:
+                    response=table.query(
+                        KeyConditionExpression = Key_Condition_Expression,
+                        ExpressionAttributeValues = Expression_attribute_values,
+                        ExpressionAttributeNames = Expression_Attribute_Names,
+                        FilterExpression = Filter_expression,
+                        Limit = 10 if not "limit" in data else data["limit"],
+                        ExclusiveStartKey = data["lastkey"] 
+                    )
+                else:
+                    response=table.query(
+                    KeyConditionExpression = Key_Condition_Expression,
+                    ExpressionAttributeValues = Expression_attribute_values,
+                    ExpressionAttributeNames = Expression_Attribute_Names,
+                    FilterExpression = Filter_expression,
+                    Limit = 10 if not "limit" in data else data["limit"] 
+                )
+
+        #if there is only partition key attribute
         else:
-            response=table.query(
-                KeyConditionExpression = Key_Condition_Expression,
-                ExpressionAttributeValues = Expression_attribute_values,
-                ExpressionAttributeNames = Expression_Attribute_Names
-            )
+            if "sortby" in data:
+                if "orderby" in data:
+                    if "lastkey" in data:  
+                        response=table.query(
+                            IndexName= '{}-index'.format(data["sortby"]),
+                            KeyConditionExpression = Key_Condition_Expression,
+                            ExpressionAttributeValues = Expression_attribute_values,
+                            ExpressionAttributeNames = Expression_Attribute_Names,
+                            ScanIndexForward= False if data["orderby"]=="desc" else True,
+                            Limit = 10 if not "limit" in data else data["limit"],
+                            ExclusiveStartKey= data["lastkey"] 
+                        )
+                    else:
+                            response=table.query(
+                            IndexName= '{}-index'.format(data["sortby"]),
+                            KeyConditionExpression = Key_Condition_Expression,
+                            ExpressionAttributeValues = Expression_attribute_values,
+                            ExpressionAttributeNames = Expression_Attribute_Names,
+                            ScanIndexForward= False if data["orderby"]=="desc" else True,
+                            Limit = 10 if not "limit" in data else data["limit"] 
+                        )
+                else:
+                    if "lastkey" in data:
+                        response=table.query(
+                        IndexName= '{}-index'.format(data["sortby"]),
+                        KeyConditionExpression = Key_Condition_Expression,
+                        ExpressionAttributeValues = Expression_attribute_values,
+                        ExpressionAttributeNames = Expression_Attribute_Names,
+                        ScanIndexForward= True,
+                        Limit = 10 if not "limit" in data else data["limit"],
+                        ExclusiveStartKey= data["lastkey"] 
+                        )
+                    else:
+                        response=table.query(
+                        IndexName= '{}-index'.format(data["sortby"]),
+                        KeyConditionExpression = Key_Condition_Expression,
+                        ExpressionAttributeValues = Expression_attribute_values,
+                        ExpressionAttributeNames = Expression_Attribute_Names,
+                        ScanIndexForward= True,
+                        Limit = 10 if not "limit" in data else data["limit"] 
+                        )
+
+            else:
+                if "lastkey" in data:
+                    response=table.query(
+                        KeyConditionExpression = Key_Condition_Expression,
+                        ExpressionAttributeValues = Expression_attribute_values,
+                        ExpressionAttributeNames = Expression_Attribute_Names,
+                        Limit = 10 if not "limit" in data else data["limit"],
+                        ExclusiveStartKey = data["lastkey"] 
+                    )
+                else:
+                    response=table.query(
+                    KeyConditionExpression = Key_Condition_Expression,
+                    ExpressionAttributeValues = Expression_attribute_values,
+                    ExpressionAttributeNames = Expression_Attribute_Names,
+                    Limit = 10 if not "limit" in data else data["limit"] 
+                )
     
-    #if we receive matching items from query
-    if len(response["Items"])!=0:   
-        if "sortby" in data:
-             l,Items=[],response["Items"]
-             if not "orderby" in data:
-                try:
-                    for item in sorted(Items,key = lambda item : item[data["sortby"]]):
-                        l.append(item)
-                except:
-                    logging.error("Invalid attribute")
-
-                else:
-                    return {
-                    "statusCode":200,
-                    "body":json.dumps(l)
-                    }
-             else:
-                try:
-                    for item in sorted(Items,key = lambda item : item[data["sortby"]],reverse=True if data["orderby"]=="DESC" else False) :
-                        l.append(item)
-                except:
-                    logging.error("Invalid attribute")
-
-                else:
-                    return {
-                    "statusCode":200,
-                    "body":json.dumps(l)
-                    }
-
-        else:
-            return {
+    return {
              "statusCode":200,
-             "body":json.dumps(response["Items"])
+             "body":json.dumps(response["Items"]) if len(response["Items"])!=0 else "no match found !"
             }
-    
-    #if there are no items matched
-    else:
-         return {
-              "statusCode":200,
-              "body":"No match found!"
-         }
     
