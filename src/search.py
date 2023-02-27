@@ -2,7 +2,18 @@ import boto3
 import json
 import logging
 import os
+from decimal import Decimal
+
 # from botocore.exceptions import ClientError
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        # ️ if passed in object is instance of Decimal
+        # convert it to a string
+        if isinstance(obj, Decimal):
+            return str(obj)
+        #  otherwise use the default behavior
+        return json.JSONEncoder.default(self, obj)
 
 dynamodb=boto3.resource('dynamodb')
 table=dynamodb.Table(os.environ['DYNAMODB_TABLE'])
@@ -44,6 +55,10 @@ def search(event,context):
     #-------------------------------------------------------------------------------------------------------------
     #search,filter and sort using Primary Key
     else:
+
+        # try:
+        #     checker=table.query( KeyConditionExpression= "#company= :company",ExpressionAttributeValues ={":company":data["company"]},ExpressionAttributeNames={"#company":"company"} )
+            
         Filter_expression= '{}'.format(' AND '.join(f'#{p}=:{p}' for p in data if p!="company" and p!="email" and p not in ignoreExp))
         
         #using  sortkey
@@ -73,7 +88,7 @@ def search(event,context):
                             ExpressionAttributeNames = Expression_Attribute_Names,
                             FilterExpression = Filter_expression,
                             ScanIndexForward = False if data["orderby"]=="desc" else True ,
-                            Limit = 10 if not "limit" in data else data["limit"],
+                            Limit  = 5 if not "limit" in data else data["limit"],
                             ExclusiveStartKey= data["lastkey"]   
                         )
                     else:
@@ -84,7 +99,7 @@ def search(event,context):
                             ExpressionAttributeNames = Expression_Attribute_Names,
                             FilterExpression = Filter_expression,
                             ScanIndexForward = False if data["orderby"]=="desc" else True ,
-                            Limit = 10 if not "limit" in data else data["limit"]    
+                            Limit  = 5 if not "limit" in data else data["limit"]    
                         )
                 else:
                     if "lastkey" in data:
@@ -95,7 +110,7 @@ def search(event,context):
                             ExpressionAttributeNames = Expression_Attribute_Names,
                             FilterExpression = Filter_expression,
                             ScanIndexForward = True ,
-                            Limit = 10 if not "limit" in data else data["limit"],
+                            Limit  = 5 if not "limit" in data else data["limit"],
                             ExclusiveStartKey = data["lastkey"]  
                         )
                     else:
@@ -106,7 +121,7 @@ def search(event,context):
                         ExpressionAttributeNames = Expression_Attribute_Names,
                         FilterExpression = Filter_expression,
                         ScanIndexForward = True ,
-                        Limit = 10 if not "limit" in data else data["limit"]  
+                        Limit  = 5 if not "limit" in data else data["limit"]  
                     )
             else:
                 #if nothing to sort just filter and give search results
@@ -116,7 +131,7 @@ def search(event,context):
                         ExpressionAttributeValues = Expression_attribute_values,
                         ExpressionAttributeNames = Expression_Attribute_Names,
                         FilterExpression = Filter_expression,
-                        Limit = 10 if not "limit" in data else data["limit"],
+                        Limit  = 5 if not "limit" in data else data["limit"],
                         ExclusiveStartKey = data["lastkey"] 
                     )
                 else:
@@ -125,7 +140,7 @@ def search(event,context):
                     ExpressionAttributeValues = Expression_attribute_values,
                     ExpressionAttributeNames = Expression_Attribute_Names,
                     FilterExpression = Filter_expression,
-                    Limit = 10 if not "limit" in data else data["limit"] 
+                    Limit  = 5 if not "limit" in data else data["limit"] 
                 )
 
         #if there is only partition key attribute
@@ -139,7 +154,7 @@ def search(event,context):
                             ExpressionAttributeValues = Expression_attribute_values,
                             ExpressionAttributeNames = Expression_Attribute_Names,
                             ScanIndexForward= False if data["orderby"]=="desc" else True,
-                            Limit = 10 if not "limit" in data else data["limit"],
+                            Limit  = 5 if not "limit" in data else data["limit"],
                             ExclusiveStartKey= data["lastkey"] 
                         )
                     else:
@@ -149,7 +164,7 @@ def search(event,context):
                             ExpressionAttributeValues = Expression_attribute_values,
                             ExpressionAttributeNames = Expression_Attribute_Names,
                             ScanIndexForward= False if data["orderby"]=="desc" else True,
-                            Limit = 10 if not "limit" in data else data["limit"] 
+                            Limit  = 5 if not "limit" in data else data["limit"] 
                         )
                 else:
                     if "lastkey" in data:
@@ -159,7 +174,7 @@ def search(event,context):
                         ExpressionAttributeValues = Expression_attribute_values,
                         ExpressionAttributeNames = Expression_Attribute_Names,
                         ScanIndexForward= True,
-                        Limit = 10 if not "limit" in data else data["limit"],
+                        Limit  = 5 if not "limit" in data else data["limit"],
                         ExclusiveStartKey= data["lastkey"] 
                         )
                     else:
@@ -169,7 +184,7 @@ def search(event,context):
                         ExpressionAttributeValues = Expression_attribute_values,
                         ExpressionAttributeNames = Expression_Attribute_Names,
                         ScanIndexForward= True,
-                        Limit = 10 if not "limit" in data else data["limit"] 
+                        Limit  = 5 if not "limit" in data else data["limit"] 
                         )
 
             else:
@@ -178,7 +193,7 @@ def search(event,context):
                         KeyConditionExpression = Key_Condition_Expression,
                         ExpressionAttributeValues = Expression_attribute_values,
                         ExpressionAttributeNames = Expression_Attribute_Names,
-                        Limit = 10 if not "limit" in data else data["limit"],
+                        Limit  = 5 if not "limit" in data else data["limit"],
                         ExclusiveStartKey = data["lastkey"] 
                     )
                 else:
@@ -186,11 +201,18 @@ def search(event,context):
                     KeyConditionExpression = Key_Condition_Expression,
                     ExpressionAttributeValues = Expression_attribute_values,
                     ExpressionAttributeNames = Expression_Attribute_Names,
-                    Limit = 10 if not "limit" in data else data["limit"] 
+                    Limit  = 5 if not "limit" in data else data["limit"] 
                 )
     
-    return {
-             "statusCode":200,
-             "body":json.dumps(response["Items"]) if len(response["Items"])!=0 else "no match found !"
-            }
-    
+    # return {
+    #          "statusCode":200,
+    #          "body":json.dumps(response["Items"],cls=DecimalEncoder) if len(response["Items"])!=0 else "no match found !"
+    #         }
+    if len(response["Items"])!=0:
+        if "LastEvaluatedKey" in response:
+            return { "statusCode":200,"body":json.dumps({"statusCode":200,"Items":response["Items"],"lastkey":response["LastEvaluatedKey"],"totalcount":response["ScannedCount"]},cls=DecimalEncoder) }
+            
+        else:
+            return { "statusCode":200,"body":json.dumps({"statusCode":200,"Items":response["Items"],"totalcount":response["ScannedCount"]},cls=DecimalEncoder) }
+    else:
+        return {"statusCode":404,"body": json.dumps({ "statusCode":404,"message": "No match found!" })}
