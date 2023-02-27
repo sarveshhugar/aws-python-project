@@ -46,10 +46,11 @@ def create(event, context):
 
         # create a response
         response = {
-            "statusCode": 200,
+            "statusCode": 201,
             "body": json.dumps({
-                "statusCode":200,
-                "ItemCreated":item1})
+                "statusCode":201,
+                "message":"User created successfully",
+                "UserCreated":item1})
         }
 
         return response
