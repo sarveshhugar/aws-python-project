@@ -78,51 +78,28 @@ def search(event,context):
         #if there are non-key attributes also
         if len(Filter_expression)!=0 and len(Expression_Attribute_Names)!=0:
             if "sortby" in data:
-                #if there is orderby
-                if "orderby" in data:
-                    if "lastkey" in data:
-                        response=table.query(
-                            IndexName="{}-index".format(data["sortby"]),
-                            KeyConditionExpression = Key_Condition_Expression,
-                            ExpressionAttributeValues = Expression_attribute_values,
-                            ExpressionAttributeNames = Expression_Attribute_Names,
-                            FilterExpression = Filter_expression,
-                            ScanIndexForward = False if data["orderby"]=="desc" else True ,
-                            Limit  = 5 if not "limit" in data else data["limit"],
-                            ExclusiveStartKey= data["lastkey"]   
-                        )
-                    else:
-                        response=table.query(
-                            IndexName="{}-index".format(data["sortby"]),
-                            KeyConditionExpression = Key_Condition_Expression,
-                            ExpressionAttributeValues = Expression_attribute_values,
-                            ExpressionAttributeNames = Expression_Attribute_Names,
-                            FilterExpression = Filter_expression,
-                            ScanIndexForward = False if data["orderby"]=="desc" else True ,
-                            Limit  = 5 if not "limit" in data else data["limit"]    
-                        )
-                else:
-                    if "lastkey" in data:
-                        response=table.query(
-                            IndexName="{}-index".format(data["sortby"]),
-                            KeyConditionExpression = Key_Condition_Expression,
-                            ExpressionAttributeValues = Expression_attribute_values,
-                            ExpressionAttributeNames = Expression_Attribute_Names,
-                            FilterExpression = Filter_expression,
-                            ScanIndexForward = True ,
-                            Limit  = 5 if not "limit" in data else data["limit"],
-                            ExclusiveStartKey = data["lastkey"]  
-                        )
-                    else:
-                        response=table.query(
+                if "lastkey" in data:
+                    response=table.query(
                         IndexName="{}-index".format(data["sortby"]),
                         KeyConditionExpression = Key_Condition_Expression,
                         ExpressionAttributeValues = Expression_attribute_values,
                         ExpressionAttributeNames = Expression_Attribute_Names,
                         FilterExpression = Filter_expression,
-                        ScanIndexForward = True ,
-                        Limit  = 5 if not "limit" in data else data["limit"]  
+                        ScanIndexForward = False if "orderby" in data and data["orderby"]=="desc" else True ,
+                        Limit  = 5 if not "limit" in data else data["limit"],
+                        ExclusiveStartKey= data["lastkey"]   
                     )
+                else:
+                    response=table.query(
+                        IndexName="{}-index".format(data["sortby"]),
+                        KeyConditionExpression = Key_Condition_Expression,
+                        ExpressionAttributeValues = Expression_attribute_values,
+                        ExpressionAttributeNames = Expression_Attribute_Names,
+                        FilterExpression = Filter_expression,
+                        ScanIndexForward = False if "orderby" in data and data["orderby"]=="desc" else True ,
+                        Limit  = 5 if not "limit" in data else data["limit"]    
+                    )
+               
             else:
                 #if nothing to sort just filter and give search results
                 if "lastkey" in data:
@@ -146,47 +123,25 @@ def search(event,context):
         #if there is only partition key attribute
         else:
             if "sortby" in data:
-                if "orderby" in data:
-                    if "lastkey" in data:  
-                        response=table.query(
-                            IndexName= '{}-index'.format(data["sortby"]),
-                            KeyConditionExpression = Key_Condition_Expression,
-                            ExpressionAttributeValues = Expression_attribute_values,
-                            ExpressionAttributeNames = Expression_Attribute_Names,
-                            ScanIndexForward= False if data["orderby"]=="desc" else True,
-                            Limit  = 5 if not "limit" in data else data["limit"],
-                            ExclusiveStartKey= data["lastkey"] 
-                        )
-                    else:
-                            response=table.query(
-                            IndexName= '{}-index'.format(data["sortby"]),
-                            KeyConditionExpression = Key_Condition_Expression,
-                            ExpressionAttributeValues = Expression_attribute_values,
-                            ExpressionAttributeNames = Expression_Attribute_Names,
-                            ScanIndexForward= False if data["orderby"]=="desc" else True,
-                            Limit  = 5 if not "limit" in data else data["limit"] 
-                        )
-                else:
-                    if "lastkey" in data:
-                        response=table.query(
+                if "lastkey" in data:  
+                    response=table.query(
                         IndexName= '{}-index'.format(data["sortby"]),
                         KeyConditionExpression = Key_Condition_Expression,
                         ExpressionAttributeValues = Expression_attribute_values,
                         ExpressionAttributeNames = Expression_Attribute_Names,
-                        ScanIndexForward= True,
+                        ScanIndexForward= False if "orderby" in data and data["orderby"]=="desc" else True,
                         Limit  = 5 if not "limit" in data else data["limit"],
                         ExclusiveStartKey= data["lastkey"] 
-                        )
-                    else:
+                    )
+                else:
                         response=table.query(
                         IndexName= '{}-index'.format(data["sortby"]),
                         KeyConditionExpression = Key_Condition_Expression,
                         ExpressionAttributeValues = Expression_attribute_values,
                         ExpressionAttributeNames = Expression_Attribute_Names,
-                        ScanIndexForward= True,
+                        ScanIndexForward= False if "orderby" in data and data["orderby"]=="desc" else True,
                         Limit  = 5 if not "limit" in data else data["limit"] 
-                        )
-
+                    )
             else:
                 if "lastkey" in data:
                     response=table.query(
